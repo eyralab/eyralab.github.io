@@ -418,8 +418,8 @@ const short=t=>{const L=t.split('<br>'),r=L.find(l=>/^(Результат|Result
 const tie=t=>t.replace(/(\d) (\d{3})/g,'$1 $2').replace(/(\d+) (?=[а-яё])/gi,'$1 ').replace(/ \+ /g,' + ').replace(/(^|[\s ])(в|во|к|ко|с|со|за|на|по|для|из|без|от|до|и|а|о|у|не)\s/gi,'$1$2 ');
 const brk=t=>{if(t.length<24)return tie(t);const m=t.match(/^(.*?)( вместо | instead of | — |, (?=[а-яёa-z]))(.*)$/i);if(!m)return tie(t);const sep=m[2].trim();return tie(sep===','?m[1]+',':m[1])+'<br>'+tie(sep===','?m[3]:sep+' '+m[3])};
 const ttl=t=>t.length>18&&t.includes(' · ')?t.replace(' · ',' ·<br>'):t;
-const mini=w=>'<div class="mw" style="--ar:'+w[3]+'"><div class="win">'+(w[2]?'<video muted loop playsinline preload="none" src="'+encodeURI(w[2])+'"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="cap"><b>'+ttl(w[0])+'</b><span>'+(/<br>/.test(short(w[1]))?short(w[1]):brk(short(w[1])))+'</span></div></div>';
-const card=w=>'<div class="w" style="--ar:'+w[3]+'"><div class="thumb">'+(w[2]?'<video muted loop playsinline preload="none" src="'+encodeURI(w[2])+'"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="txt"><b>'+w[0]+'</b><span>'+w[1]+'</span></div></div>';
+const mini=w=>'<div class="mw" style="--ar:'+w[3]+'"><div class="win">'+(w[2]?'<video muted loop playsinline preload="none" src="'+encodeURI(w[2])+'#t=0.1"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="cap"><b>'+ttl(w[0])+'</b><span>'+(/<br>/.test(short(w[1]))?short(w[1]):brk(short(w[1])))+'</span></div></div>';
+const card=w=>'<div class="w" style="--ar:'+w[3]+'"><div class="thumb">'+(w[2]?'<video muted loop playsinline preload="none" src="'+encodeURI(w[2])+'#t=0.1"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="txt"><b>'+w[0]+'</b><span>'+w[1]+'</span></div></div>';
 // mobile: 'swipe left' under a strip that holds more than fits; it fades once the last card is in view
 function markMore(){document.querySelectorAll('.rub').forEach(el=>{const w=el.querySelector('.works'),m=el.querySelector('.more');if(!w||!m)return;
   const upd=()=>m.classList.toggle('off',w.scrollWidth-w.clientWidth-w.scrollLeft<8);w.onscroll=upd;upd();requestAnimationFrame(upd)})}
@@ -466,10 +466,10 @@ function setAct(el,on){if(el.classList.contains('act')===on)return;el.classList.
 function fitRubs(){placeArc()}
 // hover (or tap) plays one work at a time; a clip that is missing stays a quiet slot
 function bindCards(){document.querySelectorAll('.mw').forEach(el=>{const v=el.querySelector('video');
-  if(v){v.addEventListener('loadeddata',()=>el.classList.add('has'));v.addEventListener('error',()=>el.classList.remove('has'))}
+  if(v){['loadedmetadata','loadeddata'].forEach(e=>v.addEventListener(e,()=>el.classList.add('has')));v.addEventListener('error',()=>el.classList.remove('has'))}
   el.addEventListener('click',()=>openW(el))});
   document.querySelectorAll('.w').forEach(el=>{const v=el.querySelector('video');if(!v)return;
-  v.addEventListener('loadeddata',()=>el.classList.add('has'));v.addEventListener('error',()=>el.classList.remove('has'));
+  ['loadedmetadata','loadeddata'].forEach(e=>v.addEventListener(e,()=>el.classList.add('has')));v.addEventListener('error',()=>el.classList.remove('has'));
   if(warm){v.preload='metadata';v.load()}
   const play=()=>{document.querySelectorAll('.w video').forEach(o=>{if(o!==v)o.pause()});if(v.preload==='none'||v.preload==='metadata'){v.preload='auto';v.load()}v.play().catch(()=>{})};
   el.addEventListener('mouseenter',play);el.addEventListener('mouseleave',()=>v.pause());el.addEventListener('click',()=>v.paused?play():v.pause())})}
