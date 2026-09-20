@@ -279,9 +279,9 @@ function blob(b64,type){const bin=atob(b64),u=new Uint8Array(bin.length);for(let
 const MP4=document.createElement('video').canPlayType('video/mp4; codecs="avc1.640028"')!=='';
 // media live next to the page (assets/): the first screen needs only loop A (~0.2 MB); scrub and dawn stream in behind it
 const EXT=MP4?'mp4':'webm';vA.src='assets/loopA.'+EXT;vS.src='assets/scrub.'+EXT;vC.src='assets/loopC.'+EXT;
-// scrub is then pulled whole into memory, so scroll-seeking never waits on the network
-fetch('assets/scrub.'+EXT).then(r=>r.ok?r.blob():null).then(b=>{if(!b)return;const t=vS.currentTime;vS.src=URL.createObjectURL(b);vS.load();
-  vS.addEventListener('loadedmetadata',()=>{vS.currentTime=t;const p=vS.play();if(p)p.then(()=>vS.pause()).catch(()=>{})},{once:true})}).catch(()=>{});
+// scrub used to be fetched a second time into a blob (5 MB twice on every load, images queued behind it).
+// dropped 20.09: preload="auto" buffers the same file once, and sw.js keeps it in Cache Storage,
+// so a seek — and every later visit — is served locally with no network wait.
 const mask=new Image();mask.src='assets/occluder_mask.png';
 // orbit ring as a drawn layer (outer ring + dust; inner rings masked out 20.09); outer ring ellipse in image px — the planets ride on it
 const orb=new Image();orb.src='assets/orbit.webp';const ORB={cx:1115,cy:394,a:1100,b:364};
@@ -750,9 +750,16 @@ function draw(now){gt++;
   requestAnimationFrame(draw);
 }
 // iOS: a muted video must be started once before it paints or seeks reliably
-[vA,vS,vC].forEach(v=>{v.load();const p=v.play();if(p)p.then(()=>{if(v!==vA)v.pause()}).catch(()=>{})});
+// no v.load() here: src is already set above and load() would restart the download from scratch
+[vA,vS,vC].forEach(v=>{const p=v.play();if(p)p.then(()=>{if(v!==vA)v.pause()}).catch(()=>{})});
 setTimeout(()=>$('load').classList.add('off'),6000);
 requestAnimationFrame(draw);
 })();
+</script>
+<script>
+// offline cache: assets, posters and every watched clip stay in Cache Storage,
+// so a second visit paints at once and a clip that has played stays played.
+// регистрируем сразу, а не по load: чем раньше воркер встанет, тем больше первого захода он успеет положить в кэш
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body></html>
