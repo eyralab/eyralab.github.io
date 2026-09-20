@@ -405,11 +405,11 @@ document.getElementById('lang').addEventListener('click',e=>{const a=e.target.cl
 // C · окна по дуге: small live windows on an arc above the figure (echo of the orbit), задача · решение · результат under each; click opens the same clip large, it keeps playing
 const LAY=[
  {A:[[0,1],[2]],B:[0,2,1]},          // Имиджевые: Halyk · Media · DOS
- {A:[[0,1],[2]],B:[1,0,2]},          // Креативы: CU (гор.) low left · Bazis top · Аквелон
+ {A:[[0,1],[2]],B:[1,0,2],M:[0,1,2]},          // M = mobile strip order (20.09): Bazis · CU · Acvelon. Креативы: CU (гор.) low left · Bazis top · Аквелон
  {A:[[0,1],[2,3,4]],B:[0,1,2,3,4]},  // Бренд-контент: BI Group low left · Наурыз · День строителя top · Eito · Halyk Bank
  {A:[[0],[1]],B:[0,-1,1]},           // AI VFX: myCar | xokky
- {A:[[0,1],[2,3,4]],B:[0,3,4,2,1]},  // Клипы: Есенин low · Эллаи · Otty top · Moreart · Джек low (vertical pairs mirror)
- {A:[[0,1],[2,3]],B:[0,1,-1,2,3]}];  // Films: all four horizontal
+ {A:[[0,1],[2,3,4]],B:[0,3,4,2,1],M:[4,2,3,0,1]},  // M (20.09): Otty · Moreart · Эллаи · Есенин · Джек. Клипы: Есенин low · Эллаи · Otty top · Moreart · Джек low (vertical pairs mirror)
+ {A:[[0,1],[2,3]],B:[0,1,-1,2,3],M:[1,2,3,0]}];  // M (20.09): NIA · Kurozu · Cops · Girl with a dream. Films: all four horizontal
 const MODE='C';let warm=false;
 $('rubs').innerHTML=R.map((r,i)=>'<div class="rub" id="r'+i+'"></div>').join('');
 // on the arc a work shows its name and one line — the result, or the task when there is no result; the whole chain opens on click
@@ -426,7 +426,7 @@ function markMore(){document.querySelectorAll('.rub').forEach(el=>{const w=el.qu
 addEventListener('resize',()=>markMore());if(document.fonts)document.fonts.ready.then(()=>markMore());
 function renderRubs(){const mob=innerWidth<760;
   R.forEach((r,i)=>{const L=LAY[i],cs=a=>a.map(k=>card(r.w[k])).join('');let h;
-    if(mob)h='<div class="works">'+cs(L.B.filter(k=>k>=0))+'</div><div class="more off">'+LNG().more+'</div>';
+    if(mob)h='<div class="works">'+cs((L.M||L.B).filter(k=>k>=0))+'</div><div class="more off">'+LNG().more+'</div>';
     else if(MODE==='C')h='<div class="arc">'+L.B.filter(k=>k>=0).map(k=>mini(r.w[k]).replace('class="mw"','class="mw" data-r="'+i+'" data-k="'+k+'"')).join('')+'</div>';
     $('r'+i).innerHTML='<div class="tip">'+(mob?LNG().tipM:LNG().tipD)+'</div>'+(r.lead?'<div class="lead">'+r.lead+'</div>':'')+h});
   bindCards();fitRubs();markMore();document.querySelectorAll('.rub').forEach(el=>el._mw=null);
