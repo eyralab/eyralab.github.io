@@ -380,11 +380,11 @@ T:{
  'Пара строк: что за продукт, какая цель, где будет жить ролик. Бриф соберём вместе.':'A few lines is enough — what it is, what it needs to do, where it will run. We’ll build the brief together.',
  'Написать в Telegram <span>→</span>':'Message us on Telegram <span>→</span>','Написать на почту <span>→</span>':'Email us <span>→</span>',
  'загрузка':'loading'},
-tipM:'Tap a video to play',more:'Swipe left to see more',tipD:'Click a video for the full story',soon:'video coming soon',close:'Close',
+tipM:'Tap a video to watch it full screen with sound',more:'Swipe left to see more',tipD:'Click a video for the full story',soon:'video coming soon',close:'Close',
 hintM:'Scroll ↓ · swipe sideways to spin<br>tap a planet to open',hintD:'Scroll ↓ &nbsp;·&nbsp; swipe sideways to spin the orbit &nbsp;·&nbsp; click a planet to open',
 title:'EyraLab — AI production'};
 const RU={R:R.map(r=>({n:r.n,t:r.t,lead:r.lead,w:r.w.map(w=>[w[0],w[1]])})),title:document.title,
- tipM:'Нажмите на видео, чтобы включить',more:'Листайте влево, чтобы увидеть больше',tipD:'Нажмите на видео, чтобы узнать подробнее',soon:'видео скоро',close:'Закрыть',
+ tipM:'Нажмите на видео — откроется на весь экран со звуком',more:'Листайте влево, чтобы увидеть больше',tipD:'Нажмите на видео, чтобы узнать подробнее',soon:'видео скоро',close:'Закрыть',
  hintM:'Листайте ↓ · проведите вбок — разгон<br>тап по планете — рубрика',hintD:'Крутите ↓ &nbsp;·&nbsp; вбок двумя пальцами — разгон орбиты &nbsp;·&nbsp; клик по планете — рубрика'};
 let LANG='ru';const LNG=()=>LANG==='en'?EN:RU;
 const SEL='.pill a,.copy .over,.copy .sub,.copy h1,.kicker,.pan h2,.nums b,.nums span,.step b,.step i,.fmt b,.fmt span,.note,.bio,.mem b,.mem em,.mem span,.lede,.btn,#load';
@@ -419,13 +419,14 @@ const tie=t=>t.replace(/(\d) (\d{3})/g,'$1 $2').replace(/(\d+) (?=[а-яё])/gi
 const brk=t=>{if(t.length<24)return tie(t);const m=t.match(/^(.*?)( вместо | instead of | — |, (?=[а-яёa-z]))(.*)$/i);if(!m)return tie(t);const sep=m[2].trim();return tie(sep===','?m[1]+',':m[1])+'<br>'+tie(sep===','?m[3]:sep+' '+m[3])};
 const ttl=t=>t.length>18&&t.includes(' · ')?t.replace(' · ',' ·<br>'):t;
 const mini=w=>'<div class="mw" style="--ar:'+w[3]+'"><div class="win">'+(w[2]?'<video muted loop playsinline preload="none" src="'+encodeURI(w[2])+'#t=0.1"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="cap"><b>'+ttl(w[0])+'</b><span>'+(/<br>/.test(short(w[1]))?short(w[1]):brk(short(w[1])))+'</span></div></div>';
-const card=w=>'<div class="w" style="--ar:'+w[3]+'"><div class="thumb">'+(w[2]?'<video muted loop playsinline preload="none" src="'+encodeURI(w[2])+'#t=0.1"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="txt"><b>'+w[0]+'</b><span>'+w[1]+'</span></div></div>';
+const PO=f=>encodeURI(f.replace(/([^/]+)\.mp4$/,'poster/$1.jpg'));
+const card=w=>'<div class="w'+(w[2]?' has':'')+'" style="--ar:'+w[3]+'"><div class="thumb">'+(w[2]?'<video muted playsinline preload="none" poster="'+PO(w[2])+'" src="'+encodeURI(w[2])+'"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="txt"><b>'+w[0]+'</b><span>'+w[1]+'</span></div></div>';
 // mobile: 'swipe left' under a strip that holds more than fits; it fades once the last card is in view
 function markMore(){document.querySelectorAll('.rub').forEach(el=>{const w=el.querySelector('.works'),m=el.querySelector('.more');if(!w||!m)return;
   const upd=()=>m.classList.toggle('off',w.scrollWidth-w.clientWidth-w.scrollLeft<8);w.onscroll=upd;upd();requestAnimationFrame(upd)})}
 addEventListener('resize',()=>markMore());if(document.fonts)document.fonts.ready.then(()=>markMore());
 function renderRubs(){const mob=innerWidth<760;
-  R.forEach((r,i)=>{const L=LAY[i],cs=a=>a.map(k=>card(r.w[k])).join('');let h;
+  R.forEach((r,i)=>{const L=LAY[i],cs=a=>a.map(k=>card(r.w[k]).replace('class="w','data-r="'+i+'" data-k="'+k+'" class="w')).join('');let h;
     if(mob)h='<div class="works">'+cs((L.M||L.B).filter(k=>k>=0))+'</div><div class="more off">'+LNG().more+'</div>';
     else if(MODE==='C')h='<div class="arc">'+L.B.filter(k=>k>=0).map(k=>mini(r.w[k]).replace('class="mw"','class="mw" data-r="'+i+'" data-k="'+k+'"')).join('')+'</div>';
     $('r'+i).innerHTML='<div class="tip">'+(mob?LNG().tipM:LNG().tipD)+'</div>'+(r.lead?'<div class="lead">'+r.lead+'</div>':'')+h});
@@ -469,10 +470,8 @@ function bindCards(){document.querySelectorAll('.mw').forEach(el=>{const v=el.qu
   if(v){['loadedmetadata','loadeddata'].forEach(e=>v.addEventListener(e,()=>el.classList.add('has')));v.addEventListener('error',()=>el.classList.remove('has'))}
   el.addEventListener('click',()=>openW(el))});
   document.querySelectorAll('.w').forEach(el=>{const v=el.querySelector('video');if(!v)return;
-  ['loadedmetadata','loadeddata'].forEach(e=>v.addEventListener(e,()=>el.classList.add('has')));v.addEventListener('error',()=>el.classList.remove('has'));
-  if(warm){v.preload='metadata';v.load()}
-  const play=()=>{document.querySelectorAll('.w video').forEach(o=>{if(o!==v)o.pause()});if(v.preload==='none'||v.preload==='metadata'){v.preload='auto';v.load()}v.play().catch(()=>{})};
-  el.addEventListener('mouseenter',play);el.addEventListener('mouseleave',()=>v.pause());el.addEventListener('click',()=>v.paused?play():v.pause())})}
+  v.addEventListener('error',()=>el.classList.remove('has'));
+  el.addEventListener('click',()=>openW(el))})}
 // the opened clip: the same <video> moves into the big frame (same task — playback never stops) and flies back on close
 const OV=document.createElement('div');OV.className='ov';OV.innerHTML='<div class="ovb"></div><div class="ovf"></div><div class="ovp"><button class="pp" aria-label="Play / pause"></button><span class="tc">0:00 / 0:00</span><div class="tr"><i class="bg"></i><i class="bf"></i><i class="pg"></i><b></b></div><button class="mu" aria-label="Sound"></button></div><div class="ovt"><b></b><span></span></div><button class="ovx" aria-label="Close">×</button>';document.body.appendChild(OV);
 const ovf=OV.querySelector('.ovf'),ovt=OV.querySelector('.ovt'),ovp=OV.querySelector('.ovp');let cur=null;
@@ -497,17 +496,18 @@ addEventListener('keydown',e=>{if(!cur)return;const v=ovV();if(!v)return;
   if(e.code==='Space'){e.preventDefault();toggle()}else if(e.key==='ArrowRight'){e.preventDefault();v.currentTime=Math.min(v.duration||0,v.currentTime+5)}
   else if(e.key==='ArrowLeft'){e.preventDefault();v.currentTime=Math.max(0,v.currentTime-5)}else if(e.key==='m'||e.key==='M'||e.key==='ь'||e.key==='Ь')v.muted=!v.muted});
 const box=(el,r)=>{el.style.left=r.left+'px';el.style.top=r.top+'px';el.style.width=r.width+'px';el.style.height=r.height+'px'};
-function openW(el){if(cur)return;const w=R[+el.dataset.r].w[+el.dataset.k],ar=w[3],win=el.querySelector('.win'),r0=win.getBoundingClientRect(),W=innerWidth,H=innerHeight;
-  const tw=Math.min(300,W*.24),fh=Math.min(H*.74,(W*.9-tw-40)/ar),fw=fh*ar,x=(W-fw-40-tw)/2,y=(H-fh)/2-20;
+function openW(el){if(cur)return;const w=R[+el.dataset.r].w[+el.dataset.k],ar=w[3],win=el.querySelector('.win,.thumb'),r0=win.getBoundingClientRect(),W=innerWidth,H=innerHeight,mob=W<760;
+  let tw=Math.min(300,W*.24),fh=Math.min(H*.74,(W*.9-tw-40)/ar),fw=fh*ar,x=(W-fw-40-tw)/2,y=(H-fh)/2-20;
+  if(mob){fw=W-24;fh=fw/ar;if(fh>H-270){fh=H-270;fw=fh*ar}x=(W-fw)/2;y=Math.max(56,(H-fh-230)/2);tw=W-40}
   cur={el,win};ovf.style.transition='none';box(ovf,r0);ovf.innerHTML='';
-  const v=win.querySelector('video');if(v&&el.classList.contains('has')){ovf.appendChild(v);v.muted=false;v.play().catch(()=>{})}else ovf.appendChild(win.querySelector('.pane').cloneNode(true));
-  ovt.querySelector('b').textContent=w[0];ovt.querySelector('span').innerHTML=w[1];ovt.style.left=(x+fw+40)+'px';ovt.style.top=(H/2)+'px';ovt.style.width=tw+'px';
+  const v=win.querySelector('video');if(v&&el.classList.contains('has')){ovf.appendChild(v);v.muted=false;if(mob)v.preload='auto';v.play().catch(()=>{})}else ovf.appendChild(win.querySelector('.pane').cloneNode(true));
+  ovt.querySelector('b').textContent=w[0];ovt.querySelector('span').innerHTML=w[1];if(mob){ovt.style.left='20px';ovt.style.top=(y+fh+54)+'px';ovt.style.transform='none'}else{ovt.style.left=(x+fw+40)+'px';ovt.style.top=(H/2)+'px';ovt.style.transform=''}ovt.style.width=tw+'px';
   ovp.style.left=x+'px';ovp.style.top=(y+fh+12)+'px';ovp.style.width=fw+'px';playerSync();
   el.classList.add('out');ovf.offsetWidth;OV.classList.add('on');ovf.style.transition='';box(ovf,{left:x,top:y,width:fw,height:fh})}
 function closeW(){if(!cur)return;const {el,win}=cur;cur=null;OV.classList.remove('on');box(ovf,win.getBoundingClientRect());
-  setTimeout(()=>{const v=ovf.querySelector('video');if(v){v.muted=true;win.insertBefore(v,win.firstChild);if(!el.closest('.rub').classList.contains('act'))v.pause();else v.play().catch(()=>{})}ovf.innerHTML='';el.classList.remove('out')},520)}
+  setTimeout(()=>{const v=ovf.querySelector('video');if(v){v.muted=true;win.insertBefore(v,win.firstChild);if(innerWidth<760||!el.closest('.rub').classList.contains('act'))v.pause();else v.play().catch(()=>{})}ovf.innerHTML='';el.classList.remove('out')},520)}
 OV.querySelector('.ovb').addEventListener('click',closeW);OV.querySelector('.ovx').addEventListener('click',closeW);
-addEventListener('keydown',e=>{if(e.key==='Escape')closeW()});addEventListener('wheel',e=>{if(!(e.target.closest&&e.target.closest('.ovp')))closeW()},{passive:true});addEventListener('touchmove',e=>{if(!drag&&!(e.target.closest&&e.target.closest('.ovp')))closeW()},{passive:true});
+addEventListener('keydown',e=>{if(e.key==='Escape')closeW()});addEventListener('wheel',e=>{if(!(e.target.closest&&e.target.closest('.ovp')))closeW()},{passive:true});addEventListener('touchmove',e=>{if(!drag&&!(e.target.closest&&e.target.closest('.ovp,.ovf,.ovt')))closeW()},{passive:true});
 // light half: everything stays in the sky band above the head; a panel that would reach it is scaled down (not below 0.6)
 function fitPans(){const H=innerHeight,mob=innerWidth<760;
   document.querySelectorAll('.pan').forEach(el=>{el._s=1;const h=el.offsetHeight,avail=(mob?(function(s){return s*dawnK(H,s)*432-14})(Math.max(innerWidth/FW,H/FH)):H*.53)-el.offsetTop;el._s=Math.max(.6,Math.min(1,avail/h))})}
@@ -518,7 +518,7 @@ setLang(LANG,true);renderRubs();
 {let t;addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(renderRubs,160)})}
 if(document.fonts)document.fonts.ready.then(fitRubs);
 // warm the first frame of every clip once the page is idle, so cards are not grey
-setTimeout(()=>{warm=true;document.querySelectorAll('.w video').forEach(v=>{v.preload='metadata';v.load()})},2500);
+
 const rubs=R.map((r,i)=>$('r'+i)), pans=[0,1,2,3,4].map(i=>$('p'+i));
 const stage=$('stage');
 let hover=false;
