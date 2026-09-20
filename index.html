@@ -397,7 +397,7 @@ function setLang(l,first){LANG=l==='en'?'en':'ru';try{localStorage.setItem('eyra
   const e=document.getElementById('echo');if(e&&e.dataset.i>=0&&R[+e.dataset.i])document.getElementById('echot').textContent=R[+e.dataset.i].t;
   if(!first){renderRubs();$('hint').innerHTML=innerWidth<760?LNG().hintM:LNG().hintD}}
 {const q=new URLSearchParams(location.search).get('lang');let s=null;try{s=localStorage.getItem('eyraLang')}catch(e){}
-  const nav=(navigator.language||'ru').slice(0,2);LANG=q||s||'en';if(LANG!=='en')LANG='ru'}
+  const nav=(navigator.language||'ru').slice(0,2);LANG=q||s||'ru';if(LANG!=='en')LANG='ru'}
 document.getElementById('lang').addEventListener('click',e=>{const a=e.target.closest('a');if(a&&a.dataset.l!==LANG)setLang(a.dataset.l)});
 // works: C · окна по дуге (A · фланги and B · ряд were compared and dropped 19.09); LAY.B = order on the arc
 // A · фланги: works split left / right, the centre column over the figure stays empty
