@@ -430,8 +430,10 @@ const BRANDS=[[/^Halyk Life/,'halyklife'],[/^Halyk Bank/,'halyk'],[/^DOS/,'dos']
   [/^Acvelon/,'acvelon'],[/^BI Group/,'bigroup'],[/^Eito/,'eito'],[/^myCar/,'mycar'],[/^Headliner/,'headliner']];
 const brand=(t,B)=>{const m=BRANDS.find(x=>x[0].test(t));if(!m)return null;const l=LG.find(x=>x[1]===m[1]),sub=t.includes(' · ')?t.split(' · ').slice(1).join(' · '):'';
   return '<i class="blg"><img alt="'+l[0]+'" src="'+IMG[m[1]][0]+'" style="height:'+Math.round(B*Math.pow(l[2],-.45))+'px"></i>'+(sub?'<i class="bsub">'+sub+'</i>':'')};
-const mini=w=>'<div class="mw" style="--ar:'+w[3]+'"><div class="win">'+(w[2]?'<video muted loop playsinline preload="none" src="'+encodeURI(w[2])+'#t=0.1"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="cap"><b>'+(brand(w[0],32)||ttl(w[0]))+'</b><span>'+(/<br>/.test(short(w[1]))?short(w[1]):brk(short(w[1])))+'</span></div></div>';
+// poster/*.jpg — те же превью, что стоят в мобильной ленте: кадр в окне есть с первой секунды.
+// класс has ставится сразу (не по loadedmetadata), иначе окно до загрузки показывает полосатую заглушку и мигает.
 const PO=f=>encodeURI(f.replace(/([^/]+)\.mp4$/,'poster/$1.jpg'));
+const mini=w=>'<div class="mw'+(w[2]?' has':'')+'" style="--ar:'+w[3]+'"><div class="win">'+(w[2]?'<video muted loop playsinline preload="none" poster="'+PO(w[2])+'" src="'+encodeURI(w[2])+'#t=0.1"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="cap"><b>'+(brand(w[0],32)||ttl(w[0]))+'</b><span>'+(/<br>/.test(short(w[1]))?short(w[1]):brk(short(w[1])))+'</span></div></div>';
 const card=w=>'<div class="w'+(w[2]?' has':'')+'" style="--ar:'+w[3]+'"><div class="thumb">'+(w[2]?'<video muted playsinline preload="none" poster="'+PO(w[2])+'" src="'+encodeURI(w[2])+'"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="txt"><b>'+(brand(w[0],32)||w[0])+'</b><span>'+w[1]+'</span></div></div>';
 // mobile: 'swipe left' under a strip that holds more than fits; it fades once the last card is in view
 function markMore(){document.querySelectorAll('.rub').forEach(el=>{const w=el.querySelector('.works'),m=el.querySelector('.more');if(!w||!m)return;
@@ -440,7 +442,7 @@ addEventListener('resize',()=>markMore());if(document.fonts)document.fonts.ready
 function renderRubs(){const mob=innerWidth<760;
   R.forEach((r,i)=>{const L=LAY[i],cs=a=>a.map(k=>card(r.w[k]).replace('class="w','data-r="'+i+'" data-k="'+k+'" class="w')).join('');let h;
     if(mob)h='<div class="works">'+cs((L.M||L.B).filter(k=>k>=0))+'</div><div class="more off">'+LNG().more+'</div>';
-    else if(MODE==='C')h='<div class="arc">'+L.B.filter(k=>k>=0).map(k=>mini(r.w[k]).replace('class="mw"','class="mw" data-r="'+i+'" data-k="'+k+'"')).join('')+'</div>';
+    else if(MODE==='C')h='<div class="arc">'+L.B.filter(k=>k>=0).map(k=>mini(r.w[k]).replace('class="mw','data-r="'+i+'" data-k="'+k+'" class="mw')).join('')+'</div>';
     $('r'+i).innerHTML='<div class="tip">'+(mob?LNG().tipM:LNG().tipD)+'</div>'+(r.lead?'<div class="lead">'+r.lead+'</div>':'')+h});
   bindCards();fitRubs();markMore();document.querySelectorAll('.rub').forEach(el=>el._mw=null);
   if(MODE==='C')R.forEach((r,i)=>{const el=$('r'+i);if(el.classList.contains('act'))liveRub(el,true)})}
