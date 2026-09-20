@@ -226,6 +226,9 @@ body.light .pan{text-shadow:0 0 18px rgba(250,247,240,.95),0 0 6px rgba(250,247,
 }
 @media (prefers-reduced-motion:reduce){.logos .run{animation:none}}
 @media (max-width:400px){.pill{font-size:7.6px;letter-spacing:.02em;gap:5px;padding:10px 9px}.pill .cta{padding-left:6px}}
+.blg{display:flex;justify-content:center;align-items:center;min-height:30px;margin:2px 0 5px}.blg img{display:block;max-width:92%;object-fit:contain}
+.mw.pair .cap .blg,.ovt .blg{justify-content:flex-start}.bsub{display:block;font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(242,240,234,.6);margin-bottom:2px}
+.ovt b.isl .blg{min-height:40px;margin-bottom:8px}.ovt b.isl .bsub{font-size:10px}
 </style></head>
 <body>
 <nav>
@@ -422,9 +425,14 @@ const short=t=>{const L=t.split('<br>'),r=L.find(l=>/^(Результат|Result
 const tie=t=>t.replace(/(\d) (\d{3})/g,'$1 $2').replace(/(\d+) (?=[а-яё])/gi,'$1 ').replace(/ \+ /g,' + ').replace(/(^|[\s ])(в|во|к|ко|с|со|за|на|по|для|из|без|от|до|и|а|о|у|не)\s/gi,'$1$2 ');
 const brk=t=>{if(t.length<24)return tie(t);const m=t.match(/^(.*?)( вместо | instead of | — |, (?=[а-яёa-z]))(.*)$/i);if(!m)return tie(t);const sep=m[2].trim();return tie(sep===','?m[1]+',':m[1])+'<br>'+tie(sep===','?m[3]:sep+' '+m[3])};
 const ttl=t=>t.length>18&&t.includes(' · ')?t.replace(' · ',' ·<br>'):t;
-const mini=w=>'<div class="mw" style="--ar:'+w[3]+'"><div class="win">'+(w[2]?'<video muted loop playsinline preload="none" src="'+encodeURI(w[2])+'#t=0.1"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="cap"><b>'+ttl(w[0])+'</b><span>'+(/<br>/.test(short(w[1]))?short(w[1]):brk(short(w[1])))+'</span></div></div>';
+// 20.09: a client work carries the client's logo instead of its name; the project stays as a small line under it
+const BRANDS=[[/^Halyk Life/,'halyklife'],[/^Halyk Bank/,'halyk'],[/^DOS/,'dos'],[/^Media (Ba|Ба)/,'mediabasket'],[/^Bazis/,'bazis'],[/^CU$/,'cu'],
+  [/^Acvelon/,'acvelon'],[/^BI Group/,'bigroup'],[/^Eito/,'eito'],[/^myCar/,'mycar'],[/^Headliner/,'headliner']];
+const brand=(t,B)=>{const m=BRANDS.find(x=>x[0].test(t));if(!m)return null;const l=LG.find(x=>x[1]===m[1]),sub=t.includes(' · ')?t.split(' · ').slice(1).join(' · '):'';
+  return '<i class="blg"><img alt="'+l[0]+'" src="'+IMG[m[1]][0]+'" style="height:'+Math.round(B*Math.pow(l[2],-.45))+'px"></i>'+(sub?'<i class="bsub">'+sub+'</i>':'')};
+const mini=w=>'<div class="mw" style="--ar:'+w[3]+'"><div class="win">'+(w[2]?'<video muted loop playsinline preload="none" src="'+encodeURI(w[2])+'#t=0.1"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="cap"><b>'+(brand(w[0],32)||ttl(w[0]))+'</b><span>'+(/<br>/.test(short(w[1]))?short(w[1]):brk(short(w[1])))+'</span></div></div>';
 const PO=f=>encodeURI(f.replace(/([^/]+)\.mp4$/,'poster/$1.jpg'));
-const card=w=>'<div class="w'+(w[2]?' has':'')+'" style="--ar:'+w[3]+'"><div class="thumb">'+(w[2]?'<video muted playsinline preload="none" poster="'+PO(w[2])+'" src="'+encodeURI(w[2])+'"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="txt"><b>'+w[0]+'</b><span>'+w[1]+'</span></div></div>';
+const card=w=>'<div class="w'+(w[2]?' has':'')+'" style="--ar:'+w[3]+'"><div class="thumb">'+(w[2]?'<video muted playsinline preload="none" poster="'+PO(w[2])+'" src="'+encodeURI(w[2])+'"></video>':'')+'<div class="pane">'+LNG().soon+'</div></div><div class="txt"><b>'+(brand(w[0],32)||w[0])+'</b><span>'+w[1]+'</span></div></div>';
 // mobile: 'swipe left' under a strip that holds more than fits; it fades once the last card is in view
 function markMore(){document.querySelectorAll('.rub').forEach(el=>{const w=el.querySelector('.works'),m=el.querySelector('.more');if(!w||!m)return;
   const upd=()=>m.classList.toggle('off',w.scrollWidth-w.clientWidth-w.scrollLeft<8);w.onscroll=upd;upd();requestAnimationFrame(upd)})}
@@ -505,7 +513,7 @@ function openW(el){if(cur)return;const w=R[+el.dataset.r].w[+el.dataset.k],ar=w[
   if(mob){fw=W-24;fh=fw/ar;if(fh>H-270){fh=H-270;fw=fh*ar}x=(W-fw)/2;y=Math.max(56,(H-fh-230)/2);tw=W-40}
   cur={el,win};ovf.style.transition='none';box(ovf,r0);ovf.innerHTML='';
   const v=win.querySelector('video');if(v&&el.classList.contains('has')){ovf.appendChild(v);v.muted=false;if(mob)v.preload='auto';v.play().catch(()=>{})}else ovf.appendChild(win.querySelector('.pane').cloneNode(true));
-  ovt.querySelector('b').textContent=w[0];ovt.querySelector('span').innerHTML=w[1];if(mob){ovt.style.left='20px';ovt.style.top=(y+fh+54)+'px';ovt.style.transform='none'}else{ovt.style.left=(x+fw+40)+'px';ovt.style.top=(H/2)+'px';ovt.style.transform=''}ovt.style.width=tw+'px';
+  {const bl=brand(w[0],46);const ob=ovt.querySelector('b');if(bl)ob.innerHTML=bl;else ob.textContent=w[0];ob.classList.toggle('isl',!!bl)}ovt.querySelector('span').innerHTML=w[1];if(mob){ovt.style.left='20px';ovt.style.top=(y+fh+54)+'px';ovt.style.transform='none'}else{ovt.style.left=(x+fw+40)+'px';ovt.style.top=(H/2)+'px';ovt.style.transform=''}ovt.style.width=tw+'px';
   ovp.style.left=x+'px';ovp.style.top=(y+fh+12)+'px';ovp.style.width=fw+'px';playerSync();
   el.classList.add('out');ovf.offsetWidth;OV.classList.add('on');ovf.style.transition='';box(ovf,{left:x,top:y,width:fw,height:fh})}
 function closeW(){if(!cur)return;const {el,win}=cur;cur=null;OV.classList.remove('on');box(ovf,win.getBoundingClientRect());
