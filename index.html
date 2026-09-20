@@ -225,6 +225,7 @@ body.light .pan{text-shadow:0 0 18px rgba(250,247,240,.95),0 0 6px rgba(250,247,
   .bio{font-size:9px;line-height:1.9}.lede{font-size:10px;margin:-4px auto 22px}.btn{padding:16px 26px;font-size:11px}.alt{gap:18px}.note{font-size:8.5px;margin-top:14px}.cts{margin-top:16px;font-size:10px;gap:14px}
 }
 @media (prefers-reduced-motion:reduce){.logos .run{animation:none}}
+@media (max-width:400px){.pill{font-size:7.6px;letter-spacing:.02em;gap:5px;padding:10px 9px}.pill .cta{padding-left:6px}}
 </style></head>
 <body>
 <nav>
@@ -380,11 +381,11 @@ T:{
  'Пара строк: что за продукт, какая цель, где будет жить ролик. Бриф соберём вместе.':'A few lines is enough — what it is, what it needs to do, where it will run. We’ll build the brief together.',
  'Написать в Telegram <span>→</span>':'Message us on Telegram <span>→</span>','Написать на почту <span>→</span>':'Email us <span>→</span>',
  'загрузка':'loading'},
-tipM:'Tap a video to watch it full screen with sound',more:'Swipe left to see more',tipD:'Click a video for the full story',soon:'video coming soon',close:'Close',
+tipM:'Tap a video to watch with sound',more:'Swipe left to see more',tipD:'Click a video for the full story',soon:'video coming soon',close:'Close',
 hintM:'Scroll ↓ · swipe sideways to spin<br>tap a planet to open',hintD:'Scroll ↓ &nbsp;·&nbsp; swipe sideways to spin the orbit &nbsp;·&nbsp; click a planet to open',
 title:'EyraLab — AI production'};
 const RU={R:R.map(r=>({n:r.n,t:r.t,lead:r.lead,w:r.w.map(w=>[w[0],w[1]])})),title:document.title,
- tipM:'Нажмите на видео — откроется на весь экран со звуком',more:'Листайте влево, чтобы увидеть больше',tipD:'Нажмите на видео, чтобы узнать подробнее',soon:'видео скоро',close:'Закрыть',
+ tipM:'Нажмите на видео — откроется со звуком',more:'Листайте влево, чтобы увидеть больше',tipD:'Нажмите на видео, чтобы узнать подробнее',soon:'видео скоро',close:'Закрыть',
  hintM:'Листайте ↓ · проведите вбок — разгон<br>тап по планете — рубрика',hintD:'Крутите ↓ &nbsp;·&nbsp; вбок двумя пальцами — разгон орбиты &nbsp;·&nbsp; клик по планете — рубрика'};
 let LANG='ru';const LNG=()=>LANG==='en'?EN:RU;
 const SEL='.pill a,.copy .over,.copy .sub,.copy h1,.kicker,.pan h2,.nums b,.nums span,.step b,.step i,.fmt b,.fmt span,.note,.bio,.mem b,.mem em,.mem span,.lede,.btn,#load';
