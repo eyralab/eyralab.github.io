@@ -752,8 +752,10 @@ function draw(now){gt++;
   requestAnimationFrame(draw);
 }
 // iOS: a muted video must be started once before it paints or seeks reliably
-// no v.load() here: src is already set above and load() would restart the download from scratch
-[vA,vS,vC].forEach(v=>{const p=v.play();if(p)p.then(()=>{if(v!==vA)v.pause()}).catch(()=>{})});
+// iOS: a muted video must be started once before it paints or seeks reliably.
+// v.load() was dropped 20.09 as "redundant" and put back the same day — without it the hero can stay
+// on a black frame. It is in Ловушки for a reason; do not remove it again.
+[vA,vS,vC].forEach(v=>{v.load();const p=v.play();if(p)p.then(()=>{if(v!==vA)v.pause()}).catch(()=>{})});
 setTimeout(()=>$('load').classList.add('off'),6000);
 requestAnimationFrame(draw);
 })();

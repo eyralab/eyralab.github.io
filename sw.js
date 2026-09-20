@@ -3,7 +3,7 @@
 // лежат в Cache Storage; каждый просмотренный ролик остаётся прогруженным навсегда.
 // Версию и список хэшей подставляет build.py — руками не править, правится здесь, собирается в «Готовый сайт/sw.js».
 
-const VER = '5655e1d7dd37';                    // хэш сборки: меняется — статика перекачивается
+const VER = '9b68a3dd2af1';                    // хэш сборки: меняется — статика перекачивается
 const STATIC = 'eyra-static-' + VER;
 const MEDIA  = 'eyra-media';              // переживает пересборку; ролики сверяются по хэшу файла
 const MANIFEST = {"assets/loopA.mp4": "1adc6fd39f0e", "assets/loopA.webm": "ced00ed78b10", "assets/loopC.mp4": "f3345abb7588", "assets/loopC.webm": "4e9c463a69e0", "assets/scrub.mp4": "1d082519b397", "assets/scrub.webm": "2a32b6a5d510", "видео/acvelon.mp4": "ecdab3f65c89", "видео/bigroup.mp4": "51d0a7320523", "видео/cops.mp4": "d1e4525a005e", "видео/cu.mp4": "20b4484df743", "видео/dos.mp4": "57a74245e717", "видео/eito.mp4": "e9c43a461226", "видео/ellai.mp4": "c66b8e176c59", "видео/esenin.mp4": "83568cd0f022", "видео/girl.mp4": "19d23300194f", "видео/halykbank.mp4": "5b11146a986c", "видео/halyklife.mp4": "964661567d27", "видео/jack.mp4": "37fd1739b07c", "видео/kurozu.mp4": "c9ea253de5de", "видео/mediabasket.mp4": "a7a9df77dfa5", "видео/moreart.mp4": "c9214186679c", "видео/mycar.mp4": "db2c4ae5c1df", "видео/nauryz.mp4": "d92b4a4b1a73", "видео/nia.mp4": "26519688111c", "видео/otty.mp4": "6ef87994e907", "видео/parkville.mp4": "81174044b7b8", "видео/stroitel.mp4": "0596f0f308fa", "видео/xokky.mp4": "424c59078102"};            // 'видео/girl.mp4' -> хэш содержимого
@@ -64,7 +64,19 @@ async function asset(req) {
 }
 
 // ——— видео ———
-// Плеер просит файл кусками (Range). Из кэша куски нарезаются Blob.slice — без чтения файла в память.
+// Схема нарочно тупая и безопасная (20.09, вечер).
+// Было: сетевой поток раздваивался — половина в плеер, половина в кэш. Одна загрузка, но у tee общий
+// темп: кэш пишет на диск медленно — плеер ждёт его. На тяжёлых роликах это вешало воспроизведение,
+// а оборванная запись могла лечь в кэш огрызком и отдаваться вместо ролика.
+// Стало: плеер ВСЕГДА идёт в сеть напрямую, воркер в его поток не лезет. Файл попадает в кэш отдельной
+// фоновой загрузкой, по одному и с задержкой, чтобы не мешать первому экрану. В кэш кладётся только
+// целый файл (длина сверяется), а на отдаче размер проверяется ещё раз — огрызок не переживёт чтения.
+
+const WARM_DELAY = 5000;      // не лезем в сеть, пока рисуется первый экран
+const warming = new Set();
+let chain = Promise.resolve();
+function queue(fn) { const p = chain.then(fn, fn); chain = p.catch(() => {}); return p; }
+
 function parseRange(h, size) {
   const m = /bytes=(\d*)-(\d*)/.exec(h || '');
   if (!m) return null;
@@ -75,16 +87,15 @@ function parseRange(h, size) {
   return s > e ? null : { s, e };
 }
 
-async function fromCache(res, rangeHeader) {
-  if (!rangeHeader) return res;
-  const blob = await res.blob();
+function slice(blob, type, rangeHeader) {
   const size = blob.size;
+  if (!rangeHeader) return new Response(blob, { status: 200, headers: { 'Content-Type': type, 'Content-Length': String(size), 'Accept-Ranges': 'bytes' } });
   const r = parseRange(rangeHeader, size);
   if (!r) return new Response(null, { status: 416, headers: { 'Content-Range': 'bytes */' + size } });
   return new Response(blob.slice(r.s, r.e + 1), {
     status: 206,
     headers: {
-      'Content-Type': res.headers.get('Content-Type') || 'video/mp4',
+      'Content-Type': type,
       'Content-Length': String(r.e - r.s + 1),
       'Content-Range': 'bytes ' + r.s + '-' + r.e + '/' + size,
       'Accept-Ranges': 'bytes'
@@ -96,45 +107,44 @@ async function media(e, req, url, path) {
   const c = await caches.open(MEDIA);
   const key = url.pathname;
   const hit = await c.match(key, { ignoreVary: true });
-  const rh = req.headers.get('range');
-  if (hit) return fromCache(hit, rh);
-
-  // перемотка вперёд до того, как файл лёг в кэш — отдаём сети, кэш не трогаем
-  const m = /bytes=(\d*)-/.exec(rh || '');
-  const start = m ? (m[1] === '' ? -1 : +m[1]) : 0;
-  if (start !== 0) return fetch(req);
-
-  let net;
-  try { net = await fetch(key); } catch (err) { return fetch(req); }
-  if (net.status !== 200 || !net.body) return net;
-
-  const size = Number(net.headers.get('Content-Length') || 0);
-  const type = net.headers.get('Content-Type') || (/\.webm$/i.test(path) ? 'video/webm' : 'video/mp4');
-  const head = { 'Content-Type': type, 'Accept-Ranges': 'bytes' };
-  if (size) head['Content-Length'] = String(size);
-
-  // одна загрузка из сети: одна копия идёт в плеер, вторая — в кэш
-  const [toCache, toClient] = net.body.tee();
-  e.waitUntil(store(c, key, new Response(toCache, {
-    status: 200, headers: Object.assign({ 'x-eyra': MANIFEST[path] || '' }, head)
-  }), size));
-
-  if (!rh) return new Response(toClient, { status: 200, headers: head });
-  const h = Object.assign({}, head);
-  if (size) h['Content-Range'] = 'bytes 0-' + (size - 1) + '/' + size;
-  return new Response(toClient, { status: 206, headers: h });
+  if (hit) {
+    const want = Number(hit.headers.get('x-len') || 0);
+    const blob = await hit.blob();
+    if (want && blob.size === want) {
+      return slice(blob, hit.headers.get('Content-Type') || 'video/mp4', req.headers.get('range'));
+    }
+    await c.delete(key);                       // огрызок — выкинули, дальше как будто его и не было
+  }
+  e.waitUntil(queue(() => warm(c, key, path)));
+  return fetch(req);                           // плеер получает ответ сети как есть, без посредников
 }
 
-async function store(c, key, res, size) {
+async function warm(c, key, path) {
+  if (warming.has(key)) return;
+  if (await c.match(key, { ignoreVary: true })) return;
+  warming.add(key);
   try {
-    await c.put(key, res);
-    if (size) {                                  // оборванную закачку в кэше не держим
-      const back = await c.match(key, { ignoreVary: true });
-      const blob = back && await back.blob();
-      if (!blob || blob.size !== size) await c.delete(key);
-    }
+    await new Promise(r => setTimeout(r, WARM_DELAY));
+    const r = await fetch(key);
+    if (r.status !== 200) return;
+    const buf = await r.arrayBuffer();
+    const len = Number(r.headers.get('Content-Length') || 0);
+    if (len && buf.byteLength !== len) return;                 // оборвалось на полпути — не кэшируем
+    const type = r.headers.get('Content-Type') || (/\.webm$/i.test(path) ? 'video/webm' : 'video/mp4');
+    await c.put(key, new Response(buf, {
+      status: 200,
+      headers: {
+        'Content-Type': type,
+        'Content-Length': String(buf.byteLength),
+        'Accept-Ranges': 'bytes',
+        'x-eyra': MANIFEST[path] || '',
+        'x-len': String(buf.byteLength)
+      }
+    }));
   } catch (err) {
     if (err && err.name === 'QuotaExceededError') { try { await caches.delete(MEDIA); } catch (x) {} }
     else { try { await c.delete(key); } catch (x) {} }
+  } finally {
+    warming.delete(key);
   }
 }
