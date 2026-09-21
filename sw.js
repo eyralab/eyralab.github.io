@@ -3,7 +3,7 @@
 // лежат в Cache Storage; каждый просмотренный ролик остаётся прогруженным навсегда.
 // Версию и список хэшей подставляет build.py — руками не править, правится здесь, собирается в «Готовый сайт/sw.js».
 
-const VER = 'ea757eb8b06d';                    // хэш сборки: меняется — статика перекачивается
+const VER = 'e410e6f6f1e5';                    // хэш сборки: меняется — статика перекачивается
 const STATIC = 'eyra-static-' + VER;
 const MEDIA  = 'eyra-media';              // переживает пересборку; ролики сверяются по хэшу файла
 const MANIFEST = {"assets/loopA.mp4": "1adc6fd39f0e", "assets/loopA.webm": "ced00ed78b10", "assets/loopC.mp4": "f3345abb7588", "assets/loopC.webm": "4e9c463a69e0", "assets/scrub.mp4": "1d082519b397", "assets/scrub.webm": "2a32b6a5d510", "видео/acvelon.mp4": "ecdab3f65c89", "видео/bigroup.mp4": "51d0a7320523", "видео/cops.mp4": "d1e4525a005e", "видео/cu.mp4": "20b4484df743", "видео/dos.mp4": "57a74245e717", "видео/eito.mp4": "e9c43a461226", "видео/ellai.mp4": "c66b8e176c59", "видео/esenin.mp4": "83568cd0f022", "видео/girl.mp4": "19d23300194f", "видео/halykbank.mp4": "5b11146a986c", "видео/halyklife.mp4": "964661567d27", "видео/jack.mp4": "37fd1739b07c", "видео/kurozu.mp4": "c9ea253de5de", "видео/mediabasket.mp4": "a7a9df77dfa5", "видео/moreart.mp4": "c9214186679c", "видео/mycar.mp4": "db2c4ae5c1df", "видео/nauryz.mp4": "d92b4a4b1a73", "видео/nia.mp4": "26519688111c", "видео/otty.mp4": "6ef87994e907", "видео/parkville.mp4": "81174044b7b8", "видео/stroitel.mp4": "0596f0f308fa", "видео/xokky.mp4": "424c59078102"};            // 'видео/girl.mp4' -> хэш содержимого
