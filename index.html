@@ -582,10 +582,17 @@ function layout(){const W=innerWidth,H=innerHeight,mobile=W<760;const s=Math.max
   $('hint').innerHTML=mobile?LNG().hintM:LNG().hintD;}
 addEventListener('resize',layout);layout();
 
-// scrub: never queue seeks — one in flight, the latest target wins
+// scrub (21.09): the fly-through PLAYS towards the scroll target instead of seeking to it.
+// A seek in Chrome costs 25–500 ms and drops readyState meanwhile, so seek-per-frame lags the scroll
+// by whole rubrics on a slow machine and paints nothing in between. Forward playback decodes
+// sequentially, never drops readyState and costs nothing. So: gap ahead → play at a rate proportional
+// to the gap (0.5×…MAXR), on target → pause, gap behind or a big jump → one seek (keep covers it).
 let want=0;
-function seek(t){want=t;if(vS.readyState>=1&&!vS.seeking&&Math.abs(vS.currentTime-t)>1/48)vS.currentTime=t}
-vS.addEventListener('seeked',()=>{if(Math.abs(vS.currentTime-want)>1/48)vS.currentTime=want});
+const MAXR=(()=>{let r=1;try{vS.playbackRate=16;r=vS.playbackRate||1}catch(e){}try{vS.playbackRate=1}catch(e){}return Math.max(1,Math.min(16,r))})();
+function seek(t){want=t;if(vS.readyState<1)return;const d=t-vS.currentTime;
+  if(d<=1/48&&d>-0.12){if(!vS.paused)vS.pause();return}                 // на цели или чуть впереди неё: стоим, цель догонит
+  if(d>0&&d<MAXR*0.35){const r=Math.min(MAXR,Math.max(0.25,d*6));if(Math.abs(vS.playbackRate-r)>0.01)vS.playbackRate=r;if(vS.paused)vS.play().catch(()=>{});return}
+  if(!vS.paused)vS.pause();if(!vS.seeking)vS.currentTime=t}             // назад или далеко вперёд: один seek, keep прикроет
 
 // ───── dawn overlays (video px of loop C) ─────
 const on={sheet:true,leaf:true,bird:true,pol:true,mist:true,gust:true,cur:true};
