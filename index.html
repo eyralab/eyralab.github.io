@@ -656,12 +656,9 @@ addEventListener('touchmove',e=>{if(tx===null||e.touches.length!==1)return;const
   if(!horiz&&Math.abs(ddx)>Math.abs(ddy)+3)horiz=true;if(horiz)vel-=ddx*0.0042;tx=x;tyy=y},{passive:true});
 addEventListener('touchend',()=>{tx=null;horiz=false},{passive:true});
 const ok=v=>v.readyState>=2&&v.videoWidth;
-// Chrome (и всё, что не Safari) на время перемотки роняет readyState до 1. drawImage в этот момент —
-// пустая операция по спеке, а канвас уже залит фоном #0a0e17 — отсюда тёмная вспышка на каждый seek.
-// В рубриках seek идёт каждый кадр, поэтому фон там мигает постоянно. Safari readyState не роняет —
-// поэтому там всё ровно. Держим последний удавшийся кадр облёта и подставляем его на время перемотки.
-const keep=document.createElement('canvas');keep.width=FW>>1;keep.height=FH>>1;
-const kctx=keep.getContext('2d');let keepOK=false;
+// 21.09: пробовали подставлять последний удавшийся кадр, пока readyState просажен перемоткой — откатили.
+// Замер: за прокрутку через рубрики облёт рисуется 8 раз, подмена — 237. Мигание пропадает, но вместе
+// с ним пропадает и сам облёт: картинка замирает. Подменять кадр нельзя, надо чинить саму перемотку.
 function feather(c,dx,dy,dw,dh,K){if(K>0.999)return;const f=Math.round(70*(1-K)/0.12);
   [[0,dy,0,dy+f,dx,dy,dw,f],[dx,0,dx+f,0,dx,dy,f,dh],[dx+dw,0,dx+dw-f,0,dx+dw-f,dy,f,dh],[0,dy+dh,0,dy+dh-f,dx,dy+dh-f,dw,f]].forEach(([x0,y0,x1,y1,rx,ry,rw,rh])=>{
     const g=c.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,'rgba(10,14,23,1)');g.addColorStop(1,'rgba(10,14,23,0)');c.fillStyle=g;c.fillRect(rx,ry,rw,rh)})}
@@ -714,12 +711,8 @@ function draw(now){gt++;
   if(heroMix<1&&vA.paused&&ok(vA))vA.play().catch(()=>{});if(heroMix>=1&&!vA.paused)vA.pause();
   if(cMix>0&&vC.paused&&ok(vC))vC.play().catch(()=>{});if(cMix<=0&&!vC.paused)vC.pause();
   ctx.setTransform(G.dpr,0,0,G.dpr,0,0);ctx.fillStyle='#0a0e17';ctx.fillRect(0,0,W,H);
-  // первый кадр для подмены берём ещё из лупа A — иначе на самой передаче A→облёт подменять нечем
-  if(heroMix<1&&ok(vA)){ctx.globalAlpha=1;ctx.drawImage(vA,dx,dy,dw,dh);
-    if(!keepOK){kctx.drawImage(vA,0,0,keep.width,keep.height);keepOK=true}}
-  if(heroMix>0&&cMix<1){const src=ok(vS)?vS:(keepOK?keep:null);
-    if(src){ctx.globalAlpha=heroMix;ctx.drawImage(src,dx,dy,dw,dh);
-      if(src===vS){kctx.drawImage(vS,0,0,keep.width,keep.height);keepOK=true}}}
+  if(heroMix<1&&ok(vA)){ctx.globalAlpha=1;ctx.drawImage(vA,dx,dy,dw,dh)}
+  if(heroMix>0&&cMix<1&&ok(vS)){ctx.globalAlpha=heroMix;ctx.drawImage(vS,dx,dy,dw,dh)}
   if(cMix>0&&ok(vC)){ctx.globalAlpha=cMix;ctx.drawImage(vC,dx,dy,dw,dh)}
   ctx.globalAlpha=1;feather(ctx,dx,dy,dw,dh,K);
   if(ri>=0&&dawn<0.5){const g=ctx.createLinearGradient(0,0,0,H*0.62);g.addColorStop(0,'rgba(4,6,12,.42)');g.addColorStop(1,'rgba(4,6,12,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H*0.62)}
