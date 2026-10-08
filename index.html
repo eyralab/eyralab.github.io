@@ -132,6 +132,7 @@ body.titr .mw:hover .win{transform:none}
 .ovp .tr:hover b,.ovp .tr.drag b{transform:scale(1)}.ovp .tr:hover i,.ovp .tr.drag i{top:9.5px;height:3px}
 .ovp .tc{min-width:84px;text-align:center;font-variant-numeric:tabular-nums}
 .ovf{cursor:pointer}
+.ovf video:fullscreen{object-fit:contain;background:#000}.ovf video:-webkit-full-screen{object-fit:contain;background:#000}
 .ovx{position:fixed;top:24px;right:28px;background:none;border:0;color:rgba(242,240,234,.8);font-size:28px;cursor:pointer;opacity:0;transition:opacity .3s}
 .ov.on .ovx{opacity:1}
 .w em{font-style:normal;color:rgba(240,195,106,.85)}
@@ -308,6 +309,7 @@ const R=[
  {n:'Креативы<br>под таргет',t:'Креативы под таргет',p:2,pa:'238,160,95',t0:4.6,t1:7.6,w:[
   ['Bazis · Park Ville','Задача · поднять узнаваемость ЖК и передать атмосферу<br>Решение · каждая зона и дом — через своего героя<br>Результат · серия под таргет, лучший ролик — 711 000',V+'parkville.mp4',9/16],
   ['CU','Задача · показать три вкуса рамена Булдак<br>Решение · трендовый формат под продукт<br>Результат · таргет, соцсети и экраны в магазинах',V+'cu.mp4',16/9],
+  ['CU · Back to Season','Задача · рассказать об акции с Samsung<br>Решение · вся механика акции — без съёмок<br>Результат · казахская озвучка, русские субтитры',V+'cu_bts.mp4',9/16],
   ['Acvelon','Задача · поток креативов для теста в таргете<br>Решение · разные версии на каждый сценарий<br>Результат · 16 креативов за 4 месяца',V+'acvelon.mp4',9/16]]},
  {n:'Бренд-<br>контент',t:'Бренд-контент',p:1,pa:'120,170,235',t0:7.6,t1:9.6,w:[
   ['BI Group','Задача · показать ЖК на волне премьеры «Аватара»<br>Решение · их ЖК во вселенной фильма<br>Результат · ситуативный ролик для соцсетей за 2 дня',V+'bigroup.mp4',9/16],
@@ -352,6 +354,7 @@ const EN={R:[
  {n:'Ad<br>creatives',t:'Ad creatives',w:[
   ['Bazis · Park Ville','Brief · build awareness for the development and convey its atmosphere<br>Approach · every zone and building gets its own character<br>Result · paid social series, top video 711,000 views'],
   ['CU','Brief · show three flavours of Buldak ramen<br>Approach · a trending format built around the product<br>Result · paid social, organic social and in-store screens'],
+  ['CU · Back to Season','Brief · announce the Samsung giveaway<br>Approach · the whole promo mechanic, no shoot<br>Result · Kazakh voiceover, Russian subtitles'],
   ['Acvelon','Brief · a steady stream of creatives for paid social testing<br>Approach · multiple versions for every scenario<br>Result · 16 creatives in 4 months']]},
  {n:'Social<br>content',t:'Social content',w:[
   ['BI Group','Brief · show the development on the wave of the Avatar premiere<br>Approach · their buildings placed inside the film’s world<br>Result · reactive social video in 2 days'],
@@ -420,7 +423,7 @@ document.getElementById('lang').addEventListener('click',e=>{const a=e.target.cl
 // C · окна по дуге: small live windows on an arc above the figure (echo of the orbit), задача · решение · результат under each; click opens the same clip large, it keeps playing
 const LAY=[
  {A:[[0,1],[2]],B:[0,2,1]},          // Имиджевые: Halyk · Media · DOS
- {A:[[0,1],[2]],B:[1,0,2],M:[0,1,2]},          // M = mobile strip order (20.09): Bazis · CU · Acvelon. Креативы: CU (гор.) low left · Bazis top · Аквелон
+ {A:[[0,1],[2,3]],B:[1,0,2,3],M:[0,1,2,3]},    // 24.09: + CU · Back to Season. Arc: CU (гор.) low left · Bazis · CU BTS top · Acvelon low right. M: Bazis · CU · CU BTS · Acvelon
  {A:[[0,1],[2,3,4]],B:[0,1,2,3,4]},  // Бренд-контент: BI Group low left · Наурыз · День строителя top · Eito · Halyk Bank
  {A:[[0],[1]],B:[0,-1,1]},           // AI VFX: myCar | xokky
  {A:[[0,1],[2,3,4]],B:[0,3,4,2,1],M:[4,2,3,0,1]},  // M (20.09): Otty · Moreart · Эллаи · Есенин · Джек. Клипы: Есенин low · Эллаи · Otty top · Moreart · Джек low (vertical pairs mirror)
@@ -434,7 +437,7 @@ const tie=t=>t.replace(/(\d) (\d{3})/g,'$1 $2').replace(/(\d+) (?=[а-яё])/gi
 const brk=t=>{if(t.length<24)return tie(t);const m=t.match(/^(.*?)( вместо | instead of | — |, (?=[а-яёa-z]))(.*)$/i);if(!m)return tie(t);const sep=m[2].trim();return tie(sep===','?m[1]+',':m[1])+'<br>'+tie(sep===','?m[3]:sep+' '+m[3])};
 const ttl=t=>t.length>18&&t.includes(' · ')?t.replace(' · ',' ·<br>'):t;
 // 20.09: a client work carries the client's logo instead of its name; the project stays as a small line under it
-const BRANDS=[[/^Halyk Life/,'halyklife'],[/^Halyk Bank/,'halyk'],[/^DOS/,'dos'],[/^Media (Ba|Ба)/,'mediabasket'],[/^Bazis/,'bazis'],[/^CU$/,'cu'],
+const BRANDS=[[/^Halyk Life/,'halyklife'],[/^Halyk Bank/,'halyk'],[/^DOS/,'dos'],[/^Media (Ba|Ба)/,'mediabasket'],[/^Bazis/,'bazis'],[/^CU( ·|$)/,'cu'],
   [/^Acvelon/,'acvelon'],[/^BI Group/,'bigroup'],[/^Eito/,'eito'],[/^myCar/,'mycar'],[/^Headliner/,'headliner']];
 const brand=(t,B)=>{const m=BRANDS.find(x=>x[0].test(t));if(!m)return null;const l=LG.find(x=>x[1]===m[1]),sub=t.includes(' · ')?t.split(' · ').slice(1).join(' · '):'';
   return '<i class="blg"><img alt="'+l[0]+'" src="'+IMG[m[1]][0]+'" style="height:'+Math.round(B*Math.pow(l[2],-.45))+'px"></i>'+(sub?'<i class="bsub">'+sub+'</i>':'')};
@@ -495,11 +498,11 @@ function bindCards(){document.querySelectorAll('.mw').forEach(el=>{const v=el.qu
   v.addEventListener('error',()=>el.classList.remove('has'));
   el.addEventListener('click',()=>openW(el))})}
 // the opened clip: the same <video> moves into the big frame (same task — playback never stops) and flies back on close
-const OV=document.createElement('div');OV.className='ov';OV.innerHTML='<div class="ovb"></div><div class="ovf"></div><div class="ovp"><button class="pp" aria-label="Play / pause"></button><span class="tc">0:00 / 0:00</span><div class="tr"><i class="bg"></i><i class="bf"></i><i class="pg"></i><b></b></div><button class="mu" aria-label="Sound"></button></div><div class="ovt"><b></b><span></span></div><button class="ovx" aria-label="Close">×</button>';document.body.appendChild(OV);
+const OV=document.createElement('div');OV.className='ov';OV.innerHTML='<div class="ovb"></div><div class="ovf"></div><div class="ovp"><button class="pp" aria-label="Play / pause"></button><span class="tc">0:00 / 0:00</span><div class="tr"><i class="bg"></i><i class="bf"></i><i class="pg"></i><b></b></div><button class="mu" aria-label="Sound"></button><button class="fs" aria-label="Fullscreen"><svg viewBox="0 0 16 16"><path d="M2 2h4.5v1.5h-3v3H2zM9.5 2H14v4.5h-1.5v-3h-3zM2 9.5h1.5v3h3V14H2zM12.5 9.5H14V14H9.5v-1.5h3z"/></svg></button></div><div class="ovt"><b></b><span></span></div><button class="ovx" aria-label="Close">×</button>';document.body.appendChild(OV);
 const ovf=OV.querySelector('.ovf'),ovt=OV.querySelector('.ovt'),ovp=OV.querySelector('.ovp');let cur=null;
 // player: play/pause · time · scrub track · sound. The work never gets covered — the bar sits under the frame
 const ICO={play:'<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9.5-5.5z"/></svg>',pause:'<svg viewBox="0 0 16 16"><path d="M3.5 2.5h3v11h-3zM9.5 2.5h3v11h-3z"/></svg>',on:'<svg viewBox="0 0 16 16"><path d="M2 6h3l4-3.5v11L5 10H2z"/><path d="M11 5.2a4 4 0 0 1 0 5.6l-.8-.8a2.9 2.9 0 0 0 0-4z"/><path d="M12.8 3.4a6.5 6.5 0 0 1 0 9.2l-.8-.8a5.4 5.4 0 0 0 0-7.6z"/></svg>',off:'<svg viewBox="0 0 16 16"><path d="M2 6h3l4-3.5v11L5 10H2z"/><path d="M11 5.8l.8-.8 1.7 1.7 1.7-1.7.8.8-1.7 1.7 1.7 1.7-.8.8-1.7-1.7-1.7 1.7-.8-.8 1.7-1.7z"/></svg>'};
-const pp=ovp.querySelector('.pp'),mu=ovp.querySelector('.mu'),tc=ovp.querySelector('.tc'),tr=ovp.querySelector('.tr'),pg=tr.querySelector('.pg'),bf=tr.querySelector('.bf'),hd=tr.querySelector('b');
+const fsb=ovp.querySelector('.fs'),pp=ovp.querySelector('.pp'),mu=ovp.querySelector('.mu'),tc=ovp.querySelector('.tc'),tr=ovp.querySelector('.tr'),pg=tr.querySelector('.pg'),bf=tr.querySelector('.bf'),hd=tr.querySelector('b');
 const ovV=()=>ovf.querySelector('video'),mmss=t=>{t=Math.max(0,Math.floor(t||0));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
 let drag=false;
 function playerSync(){const v=ovV();if(!v)return;const d=v.duration||0,t=v.currentTime||0,f=d?t/d:0;
@@ -509,6 +512,14 @@ function playerSync(){const v=ovV();if(!v)return;const d=v.duration||0,t=v.curre
 const toggle=()=>{const v=ovV();if(!v)return;v.paused?v.play().catch(()=>{}):v.pause()};
 pp.addEventListener('click',toggle);ovf.addEventListener('click',toggle);
 mu.addEventListener('click',()=>{const v=ovV();if(v)v.muted=!v.muted});
+// fullscreen: the clip itself goes full screen with native controls; on exit it is back in the frame, still playing
+const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
+function goFS(){const v=ovV();if(!v)return;if(fsEl()){(document.exitFullscreen||document.webkitExitFullscreen).call(document);return}
+  v.controls=true;const rq=v.requestFullscreen||v.webkitRequestFullscreen;if(rq){const r=rq.call(v);if(r&&r.catch)r.catch(()=>{v.controls=false})}else if(v.webkitEnterFullscreen)v.webkitEnterFullscreen()}
+const fsOff=()=>{if(!fsEl()){const v=ovV();if(v)v.controls=false;playerSync()}};
+document.addEventListener('fullscreenchange',fsOff);document.addEventListener('webkitfullscreenchange',fsOff);
+addEventListener('webkitendfullscreen',e=>{if(e.target.tagName==='VIDEO')e.target.controls=false},true);
+fsb.addEventListener('click',goFS);ovf.addEventListener('dblclick',goFS);
 const seekTo=(e,fine)=>{const v=ovV();if(!v||!v.duration)return;const r=tr.getBoundingClientRect(),f=Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),t=f*v.duration;
   if(!fine&&v.fastSeek)v.fastSeek(t);else v.currentTime=t;pg.style.width=hd.style.left=(f*100)+'%'};
 tr.addEventListener('pointerdown',e=>{drag=true;tr.classList.add('drag');tr.setPointerCapture(e.pointerId);seekTo(e)});
@@ -516,7 +527,7 @@ tr.addEventListener('pointermove',e=>{if(drag)seekTo(e)});
 tr.addEventListener('pointerup',e=>{if(!drag)return;drag=false;tr.classList.remove('drag');seekTo(e,true)});
 addEventListener('keydown',e=>{if(!cur)return;const v=ovV();if(!v)return;
   if(e.code==='Space'){e.preventDefault();toggle()}else if(e.key==='ArrowRight'){e.preventDefault();v.currentTime=Math.min(v.duration||0,v.currentTime+5)}
-  else if(e.key==='ArrowLeft'){e.preventDefault();v.currentTime=Math.max(0,v.currentTime-5)}else if(e.key==='m'||e.key==='M'||e.key==='ь'||e.key==='Ь')v.muted=!v.muted});
+  else if(e.key==='ArrowLeft'){e.preventDefault();v.currentTime=Math.max(0,v.currentTime-5)}else if(e.key==='m'||e.key==='M'||e.key==='ь'||e.key==='Ь')v.muted=!v.muted;else if(e.key==='f'||e.key==='F'||e.key==='а'||e.key==='А')goFS()});
 const box=(el,r)=>{el.style.left=r.left+'px';el.style.top=r.top+'px';el.style.width=r.width+'px';el.style.height=r.height+'px'};
 function openW(el){if(cur)return;const w=R[+el.dataset.r].w[+el.dataset.k],ar=w[3],win=el.querySelector('.win,.thumb'),r0=win.getBoundingClientRect(),W=innerWidth,H=innerHeight,mob=W<760;
   let tw=Math.min(300,W*.24),fh=Math.min(H*.74,(W*.9-tw-40)/ar),fw=fh*ar,x=(W-fw-40-tw)/2,y=(H-fh)/2-20;
@@ -529,7 +540,7 @@ function openW(el){if(cur)return;const w=R[+el.dataset.r].w[+el.dataset.k],ar=w[
 function closeW(){if(!cur)return;const {el,win}=cur;cur=null;OV.classList.remove('on');box(ovf,win.getBoundingClientRect());
   setTimeout(()=>{const v=ovf.querySelector('video');if(v){v.muted=true;win.insertBefore(v,win.firstChild);if(innerWidth<760||!el.closest('.rub').classList.contains('act'))v.pause();else v.play().catch(()=>{})}ovf.innerHTML='';el.classList.remove('out')},520)}
 OV.querySelector('.ovb').addEventListener('click',closeW);OV.querySelector('.ovx').addEventListener('click',closeW);
-addEventListener('keydown',e=>{if(e.key==='Escape')closeW()});addEventListener('wheel',e=>{if(!(e.target.closest&&e.target.closest('.ovp')))closeW()},{passive:true});addEventListener('touchmove',e=>{if(!drag&&!(e.target.closest&&e.target.closest('.ovp,.ovf,.ovt')))closeW()},{passive:true});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&!fsEl())closeW()});addEventListener('wheel',e=>{if(!fsEl()&&!(e.target.closest&&e.target.closest('.ovp')))closeW()},{passive:true});addEventListener('touchmove',e=>{if(!drag&&!fsEl()&&!(e.target.closest&&e.target.closest('.ovp,.ovf,.ovt')))closeW()},{passive:true});
 // light half: everything stays in the sky band above the head; a panel that would reach it is scaled down (not below 0.6)
 function fitPans(){const H=innerHeight,mob=innerWidth<760;
   document.querySelectorAll('.pan').forEach(el=>{el._s=1;const h=el.offsetHeight,avail=(mob?(function(s){return s*dawnK(H,s)*432-14})(Math.max(innerWidth/FW,H/FH)):H*.53)-el.offsetTop;el._s=Math.max(.6,Math.min(1,avail/h))})}
