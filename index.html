@@ -309,7 +309,6 @@ const R=[
  {n:'Креативы<br>под таргет',t:'Креативы под таргет',p:2,pa:'238,160,95',t0:4.6,t1:7.6,w:[
   ['Bazis · Park Ville','Задача · поднять узнаваемость ЖК и передать атмосферу<br>Решение · каждая зона и дом — через своего героя<br>Результат · серия под таргет, лучший ролик — 711 000',V+'parkville.mp4',9/16],
   ['CU','Задача · показать три вкуса рамена Булдак<br>Решение · трендовый формат под продукт<br>Результат · таргет, соцсети и экраны в магазинах',V+'cu.mp4',16/9],
-  ['CU · Back to Season','Задача · рассказать об акции с Samsung<br>Решение · вся механика акции — без съёмок<br>Результат · казахская озвучка, русские субтитры',V+'cu_bts.mp4',9/16],
   ['Acvelon','Задача · поток креативов для теста в таргете<br>Решение · разные версии на каждый сценарий<br>Результат · 16 креативов за 4 месяца',V+'acvelon.mp4',9/16]]},
  {n:'Бренд-<br>контент',t:'Бренд-контент',p:1,pa:'120,170,235',t0:7.6,t1:9.6,w:[
   ['BI Group','Задача · показать ЖК на волне премьеры «Аватара»<br>Решение · их ЖК во вселенной фильма<br>Результат · ситуативный ролик для соцсетей за 2 дня',V+'bigroup.mp4',9/16],
@@ -354,7 +353,6 @@ const EN={R:[
  {n:'Ad<br>creatives',t:'Ad creatives',w:[
   ['Bazis · Park Ville','Brief · build awareness for the development and convey its atmosphere<br>Approach · every zone and building gets its own character<br>Result · paid social series, top video 711,000 views'],
   ['CU','Brief · show three flavours of Buldak ramen<br>Approach · a trending format built around the product<br>Result · paid social, organic social and in-store screens'],
-  ['CU · Back to Season','Brief · announce the Samsung giveaway<br>Approach · the whole promo mechanic, no shoot<br>Result · Kazakh voiceover, Russian subtitles'],
   ['Acvelon','Brief · a steady stream of creatives for paid social testing<br>Approach · multiple versions for every scenario<br>Result · 16 creatives in 4 months']]},
  {n:'Social<br>content',t:'Social content',w:[
   ['BI Group','Brief · show the development on the wave of the Avatar premiere<br>Approach · their buildings placed inside the film’s world<br>Result · reactive social video in 2 days'],
@@ -423,7 +421,7 @@ document.getElementById('lang').addEventListener('click',e=>{const a=e.target.cl
 // C · окна по дуге: small live windows on an arc above the figure (echo of the orbit), задача · решение · результат under each; click opens the same clip large, it keeps playing
 const LAY=[
  {A:[[0,1],[2]],B:[0,2,1]},          // Имиджевые: Halyk · Media · DOS
- {A:[[0,1],[2,3]],B:[1,0,2,3],M:[0,1,2,3]},    // 24.09: + CU · Back to Season. Arc: CU (гор.) low left · Bazis · CU BTS top · Acvelon low right. M: Bazis · CU · CU BTS · Acvelon
+ {A:[[0,1],[2]],B:[1,0,2],M:[0,1,2]},          // M = mobile strip order (20.09): Bazis · CU · Acvelon. Креативы: CU (гор.) low left · Bazis top · Аквелон
  {A:[[0,1],[2,3,4]],B:[0,1,2,3,4]},  // Бренд-контент: BI Group low left · Наурыз · День строителя top · Eito · Halyk Bank
  {A:[[0],[1]],B:[0,-1,1]},           // AI VFX: myCar | xokky
  {A:[[0,1],[2,3,4]],B:[0,3,4,2,1],M:[4,2,3,0,1]},  // M (20.09): Otty · Moreart · Эллаи · Есенин · Джек. Клипы: Есенин low · Эллаи · Otty top · Moreart · Джек low (vertical pairs mirror)
@@ -437,7 +435,7 @@ const tie=t=>t.replace(/(\d) (\d{3})/g,'$1 $2').replace(/(\d+) (?=[а-яё])/gi
 const brk=t=>{if(t.length<24)return tie(t);const m=t.match(/^(.*?)( вместо | instead of | — |, (?=[а-яёa-z]))(.*)$/i);if(!m)return tie(t);const sep=m[2].trim();return tie(sep===','?m[1]+',':m[1])+'<br>'+tie(sep===','?m[3]:sep+' '+m[3])};
 const ttl=t=>t.length>18&&t.includes(' · ')?t.replace(' · ',' ·<br>'):t;
 // 20.09: a client work carries the client's logo instead of its name; the project stays as a small line under it
-const BRANDS=[[/^Halyk Life/,'halyklife'],[/^Halyk Bank/,'halyk'],[/^DOS/,'dos'],[/^Media (Ba|Ба)/,'mediabasket'],[/^Bazis/,'bazis'],[/^CU( ·|$)/,'cu'],
+const BRANDS=[[/^Halyk Life/,'halyklife'],[/^Halyk Bank/,'halyk'],[/^DOS/,'dos'],[/^Media (Ba|Ба)/,'mediabasket'],[/^Bazis/,'bazis'],[/^CU$/,'cu'],
   [/^Acvelon/,'acvelon'],[/^BI Group/,'bigroup'],[/^Eito/,'eito'],[/^myCar/,'mycar'],[/^Headliner/,'headliner']];
 const brand=(t,B)=>{const m=BRANDS.find(x=>x[0].test(t));if(!m)return null;const l=LG.find(x=>x[1]===m[1]),sub=t.includes(' · ')?t.split(' · ').slice(1).join(' · '):'';
   return '<i class="blg"><img alt="'+l[0]+'" src="'+IMG[m[1]][0]+'" style="height:'+Math.round(B*Math.pow(l[2],-.45))+'px"></i>'+(sub?'<i class="bsub">'+sub+'</i>':'')};
